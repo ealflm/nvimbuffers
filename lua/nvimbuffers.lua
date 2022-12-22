@@ -1,7 +1,23 @@
 local M = {}
 
+M.is_buf_valid = function(bufnr)
+  return vim.api.nvim_buf_is_valid(bufnr) and vim.bo[bufnr].buflisted
+end
+
+M.buf_filter = function()
+  local bufs = vim.t.bufs or nil
+
+  if not bufs then return {} end
+
+  for i = #bufs, 1, -1 do
+    if not M.is_buf_valid(bufs[i]) then table.remove(bufs, i) end
+  end
+
+  return bufs
+end
+
 M.buf_prev = function()
-  local bufs = vim.t.bufs
+  local bufs = M.buf_filter() or {}
 
   for i, v in ipairs(bufs) do
     if vim.api.nvim_get_current_buf() == v then
@@ -12,7 +28,7 @@ M.buf_prev = function()
 end
 
 M.buf_next = function()
-  local bufs = vim.t.bufs
+  local bufs = M.buf_filter() or {}
 
   for i, v in ipairs(bufs) do
     if vim.api.nvim_get_current_buf() == v then
@@ -35,7 +51,7 @@ M.should_hijack_buf = function(buf)
 end
 
 M.get_active_buffers = function()
-  local listedBuffers = vim.t.bufs
+  local listedBuffers = M.buf_filter() or {}
   local result = {}
 
   for _, buf in ipairs(listedBuffers) do
@@ -46,7 +62,7 @@ M.get_active_buffers = function()
 end
 
 M.get_hidden_buffers = function()
-  local listedBuffers = vim.t.bufs
+  local listedBuffers = M.buf_filter() or {}
   local result = {}
 
   for _, buf in ipairs(listedBuffers) do
@@ -62,7 +78,7 @@ M.only_buffer = function()
 end
 
 M.close_noname_buffer = function()
-  local buffers = vim.t.bufs
+  local buffers = M.buf_filter() or {}
 
   local bufcount = #buffers
   while (M.should_hijack_buf(vim.api.nvim_get_current_buf()) and bufcount > 0) do
