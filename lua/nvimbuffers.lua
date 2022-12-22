@@ -38,6 +38,19 @@ M.buf_next = function()
   end
 end
 
+-- Check if current buf is workspace.md
+M.is_workspace_md = function(buf)
+  local bufnr = buf or vim.api.nvim_get_current_buf()
+  local bufname = vim.api.nvim_buf_get_name(bufnr)
+  local bufmodified = vim.api.nvim_buf_get_option(bufnr, "modified")
+  local ft = vim.api.nvim_buf_get_option(bufnr, "ft")
+
+  local is_workspace_md = string.find(bufname, ".workspace.md") and
+                              not bufmodified and ft == "markdown"
+
+  return is_workspace_md
+end
+
 -- Check if current buf is no name buf
 M.should_hijack_buf = function(buf)
   local bufnr = buf or vim.api.nvim_get_current_buf()
@@ -89,6 +102,13 @@ M.close_noname_buffer = function()
   local hiddenBuffers = M.get_hidden_buffers()
   for _, buf in ipairs(hiddenBuffers) do
     if (M.should_hijack_buf(buf)) then vim.cmd("confirm bd" .. buf) end
+  end
+end
+
+M.close_workspace_md = function()
+  local hiddenBuffers = M.get_hidden_buffers()
+  for _, buf in ipairs(hiddenBuffers) do
+    if (M.is_workspace_md(buf)) then vim.cmd("confirm bd" .. buf) end
   end
 end
 
