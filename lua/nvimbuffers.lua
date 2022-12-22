@@ -76,4 +76,6 @@ M.close_noname_buffer = function()
   end
 end
 
+function M.setup() end
+
 return M
