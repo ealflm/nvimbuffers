@@ -38,6 +38,31 @@ M.buf_next = function()
   end
 end
 
+M.buf_close = function(bufnr)
+  if vim.bo.buftype == "terminal" then
+    vim.cmd(vim.bo.buflisted and "set nobl | enew" or "hide")
+  else
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+    M.buf_prev()
+    vim.cmd("silent! confirm bd" .. bufnr)
+  end
+end
+
+M.move_to_first = function()
+  local bufs = M.buf_filter() or {}
+
+  for i, v in ipairs(bufs) do
+    if vim.api.nvim_get_current_buf() == v then
+      table.remove(bufs, i)
+      table.insert(bufs, v)
+      break
+    end
+  end
+
+  vim.t.bufs = bufs
+  vim.cmd "redrawtabline"
+end
+
 -- Check if current buf is workspace.md
 M.is_workspace_md = function(buf)
   local bufnr = buf or vim.api.nvim_get_current_buf()
